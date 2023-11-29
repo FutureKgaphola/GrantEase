@@ -8,6 +8,7 @@ import {
   TouchableOpacity,
   View,TouchableWithoutFeedback,Keyboard
 } from 'react-native';
+import { ActivityIndicator, MD2Colors } from 'react-native-paper';
 import auth from '@react-native-firebase/auth';
 import {
   GoogleSignin,
@@ -22,9 +23,10 @@ import Icon from 'react-native-vector-icons/Zocial';
 import Octicons from 'react-native-vector-icons/Octicons';
 import {Button, Card, TextInput, Switch} from 'react-native-paper';
 
-async function onGoogleButtonPress() {
+async function onGoogleButtonPress(navigation:any) {
   // Check if your device supports Google Play
-  await GoogleSignin.hasPlayServices({showPlayServicesUpdateDialog: true});
+  try {
+    await GoogleSignin.hasPlayServices({showPlayServicesUpdateDialog: true});
   // Get the users ID token
   const {idToken} = await GoogleSignin.signIn();
 
@@ -34,7 +36,45 @@ async function onGoogleButtonPress() {
   // Sign-in the user with the credential
   const res = await auth().signInWithCredential(googleCredential);
   if (res) {
-    Alert.alert('Success', 'User Authenticated');
+    //Alert.alert('Success', 'User Authenticated');
+    console.log("success");
+    console.log(res);
+    navigation.navigate('Home');
+  }
+  } catch (error:any) {
+    if (error.code === statusCodes.SIGN_IN_CANCELLED) {
+      // user cancelled the login flow
+      console.log("user cancelled the login flow.","StatusCode:"+String(error.code));
+    } else if (error.code === statusCodes.IN_PROGRESS) {
+      // operation (e.g. sign in) is in progress already
+      console.log(error.code);
+      Alert.alert('Action in progress',"Sign in is in progress already");
+    } else if (error.code === statusCodes.PLAY_SERVICES_NOT_AVAILABLE) {
+      // play services not available or outdated
+      console.log(error.code);
+      Alert.alert('PlayStore error',"play services not available or outdated");
+    } else {
+      // some other error happened
+      console.log(error);
+      if(String(error).includes('interrupted connection or unreachable host')){
+        Alert.alert('Error',String(error),[
+          {
+            text: 'Try again',
+            onPress: () => onGoogleButtonPress(navigation),
+          },
+          {
+            text: 'Cancel',
+            onPress: () => {},
+            style: 'cancel',
+          },
+          
+        ]);
+      }else{
+        Alert.alert('Error',String(error));
+      }
+      
+      
+    }
   }
 }
 
@@ -50,7 +90,7 @@ const signOut = async () => {
   }
 };
 
-const Login = () => {
+const Login = ({navigation}: {navigation: any}) => {
   const [isSwitchOn, setIsSwitchOn] = React.useState(false);
 
   const onToggleSwitch = () => setIsSwitchOn(!isSwitchOn);
@@ -96,6 +136,7 @@ const Login = () => {
         </Button>
 
         <TouchableOpacity
+        onPress={() => onGoogleButtonPress(navigation)}
           style={{
             flexDirection: 'row',
             marginTop: 5,
@@ -106,18 +147,14 @@ const Login = () => {
             
           }}>
           <GoogleSigninButton
-            size={GoogleSigninButton.Size.Icon}
+          style={{flex:1}}
+            size={GoogleSigninButton.Size.Wide}
             color={GoogleSigninButton.Color.Light}
-            onPress={() => {
-              () => onGoogleButtonPress();
-            }}
             disabled={false}
           />
-          <Text
-            style={{alignSelf: 'center', color: '#FFBD11', fontWeight: '600'}}>
-            Sign in with Google
-          </Text>
+          
         </TouchableOpacity>
+        <ActivityIndicator animating={true} color={MD2Colors.orangeA200} />
         <View style={{flexDirection: 'row',marginTop:5}}>
           <Text>Remember me </Text>
           <Switch
