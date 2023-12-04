@@ -6,18 +6,74 @@ import {
   Image,
   View,
   Text,
-  TouchableOpacity
+  TouchableOpacity,
+  Alert,
 } from 'react-native';
 import {TextInput, Button, Card} from 'react-native-paper';
 import Icon from 'react-native-vector-icons/Zocial';
 import AntDesign from 'react-native-vector-icons/AntDesign';
 import Octicons from 'react-native-vector-icons/Octicons';
 import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
+import firestore from '@react-native-firebase/firestore';
+import auth from '@react-native-firebase/auth';
 
 const Register = ({navigation}: {navigation: any}) => {
   const [email, setemail] = React.useState('');
-  const [password,setpassword]=React.useState("");
-  const [secure,setsecure]=React.useState(true);
+  const [password, setpassword] = React.useState('');
+  const [secure, setsecure] = React.useState(true);
+  const [name, setName] = React.useState('');
+  const [SAID, setID] = React.useState('');
+  const [loading,setloading]=React.useState(false);
+
+  const sigup = () => {
+
+    if(email.trim()!=='' && SAID.trim()!=="" && name!=="" && password!==""){
+      setloading(true);
+      const data = {
+        Email: email.trim(),
+        IDno: SAID,
+        Name: name,
+        applied: 'not submitted',
+        certificateUrl: 'not applicable',
+        finance: 'not approved',
+        illness: 'not applicable',
+        medcertificate: 'not applicable',
+        medical: 'not approved',
+        profimage: 'no image',
+        signmethod: 'email and password',
+      };
+  
+      auth()
+        .createUserWithEmailAndPassword(email.trim(), password)
+        .then((res) => {
+          firestore()
+            .collection('users').doc(res.user.uid)
+            .set(data)
+            .then(() => {
+              Alert.alert('Notification', 'Successfull registration', [
+                {text: 'OK', onPress: () => {
+                  navigation.navigate('Login')
+                }},
+              ]);
+            });
+        })
+        .catch(error => {
+          setloading(false);
+          if (error.code === 'auth/email-already-in-use') {
+            Alert.alert("Firebase error",'That email address is already in use!');
+          }
+          if (error.code === 'auth/invalid-email') {
+            Alert.alert("Firebase error",'That email address is invalid!');
+          }
+  
+          Alert.alert("Firebase error",String(error));
+        });
+
+    }else{
+      Alert.alert('Form error',"Please fill in the form");
+    }
+    
+  };
   return (
     <TouchableWithoutFeedback onPress={() => Keyboard.dismiss()}>
       <ScrollView
@@ -26,8 +82,8 @@ const Register = ({navigation}: {navigation: any}) => {
           style={{width: '100%', height: 300, objectFit: 'contain'}}
           source={require('../assets/banner.png')}
         />
-        
-        <Text style={{marginLeft:20}}>Setup for an account with us...</Text>
+
+        <Text style={{marginLeft: 20}}>Setup for an account with us...</Text>
 
         <Card style={{margin: 10, padding: 10}}>
           <TextInput
@@ -44,23 +100,51 @@ const Register = ({navigation}: {navigation: any}) => {
             }
           />
           <TextInput
-          mode="outlined"
-          label="Enter password"
-          onChangeText={(text)=>setpassword(text)}
-          placeholder="Enter password"
-          placeholderTextColor={'#C7C7C7'}
-          secureTextEntry={secure}
-          right={<TextInput.Icon icon={()=>(secure? <Octicons onPress={()=>secure? setsecure(false) : setsecure(true)} name="eye-closed" size={24} color="black" /> : <Octicons onPress={()=>secure? setsecure(false):setsecure(true)} name="eye" size={24} color="black" />)} />}
-        />
+            mode="outlined"
+            label="Enter password"
+            onChangeText={text => setpassword(text)}
+            placeholder="Enter password"
+            placeholderTextColor={'#C7C7C7'}
+            secureTextEntry={secure}
+            right={
+              <TextInput.Icon
+                icon={() =>
+                  secure ? (
+                    <Octicons
+                      onPress={() =>
+                        secure ? setsecure(false) : setsecure(true)
+                      }
+                      name="eye-closed"
+                      size={24}
+                      color="black"
+                    />
+                  ) : (
+                    <Octicons
+                      onPress={() =>
+                        secure ? setsecure(false) : setsecure(true)
+                      }
+                      name="eye"
+                      size={24}
+                      color="black"
+                    />
+                  )
+                }
+              />
+            }
+          />
           <TextInput
             mode="outlined"
             label="Enter Name"
             inputMode="text"
             placeholder="Enter Name"
+            onChangeText={text => setName(text)}
+            value={name}
             placeholderTextColor={'#C7C7C7'}
             left={
               <TextInput.Icon
-                icon={() => <FontAwesome5 name="user-circle" size={24} color="black" />}
+                icon={() => (
+                  <FontAwesome5 name="user-circle" size={24} color="black" />
+                )}
               />
             }
           />
@@ -68,6 +152,8 @@ const Register = ({navigation}: {navigation: any}) => {
             mode="outlined"
             label="Enter SA ID."
             inputMode="numeric"
+            onChangeText={text => setID(text)}
+            value={SAID}
             maxLength={13}
             placeholder="Enter SA ID."
             placeholderTextColor={'#C7C7C7'}
@@ -77,26 +163,26 @@ const Register = ({navigation}: {navigation: any}) => {
               />
             }
           />
-          
+
           <Button
+          loading={loading}
+          disabled={loading? true : false}
             icon={() => <AntDesign name="check" size={24} color="white" />}
             mode="contained"
             rippleColor={'white'}
             style={{marginTop: 20, backgroundColor: '#FFBD11'}}
-            onPress={() => console.log('pressed')}>
+            onPress={() => sigup()}>
             Register
           </Button>
 
-          <View style={{flexDirection: 'row',marginTop:5,marginLeft:10}}>
-        <Text>Already have an account? </Text>
-        <TouchableOpacity onPress={()=>navigation.navigate('Login')}>
-        <Text style={{color: '#FFBD11'}}>Login</Text>
-        </TouchableOpacity>
-        
-      </View>
+          <View style={{flexDirection: 'row', marginTop: 5, marginLeft: 10}}>
+            <Text>Already have an account? </Text>
+            <TouchableOpacity onPress={() => navigation.navigate('Login')}>
+              <Text style={{color: '#FFBD11'}}>Login</Text>
+            </TouchableOpacity>
+          </View>
         </Card>
       </ScrollView>
-      
     </TouchableWithoutFeedback>
   );
 };
