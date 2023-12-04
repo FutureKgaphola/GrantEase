@@ -67,7 +67,7 @@ const Login = ({navigation}: {navigation: any}) => {
       if(email && password){
         setloggingIn(true);
         setdisabled(true);
-        const resp= await auth().signInWithEmailAndPassword(email,password);
+        const resp= await auth().signInWithEmailAndPassword(email.trim().toLocaleLowerCase(),password);
         if (resp) {
           if(isSwitchOn===true){
             storeSignInMethod("email and password");
