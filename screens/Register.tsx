@@ -83,7 +83,7 @@ const Register = ({navigation}: {navigation: any}) => {
             mode="contained"
             rippleColor={'white'}
             style={{marginTop: 20, backgroundColor: '#FFBD11'}}
-            onPress={() => console.log('clicked')}>
+            onPress={() => console.log('pressed')}>
             Register
           </Button>
 
