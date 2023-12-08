@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Card } from "react-native-paper";
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import {
@@ -6,44 +6,88 @@ import {
     Text,
     View,
     Image,
-    FlatList,
+    FlatList,Alert,TouchableOpacity
   } from "react-native";
+import { AppContext } from '../AppManager/Manager';
+import firestore from '@react-native-firebase/firestore';
+import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 
 const Canceled = () => {
-    const [appointments, setAppointments] = React.useState([
-        {
-          id: 1,
-          name: "Dr Lani",
-          career: "Cardiologist",
-          image: require('../assets/bruno.jpg'),
-          time: "  10:30",
-          date: "  19-nov-2023",
-        },
-        {
-          id: 2,
-          name: "Dr Dave",
-          career: "Cardiologist",
-          image: require('../assets/bruno.jpg'),
-          time: "  10:30",
-          date: "  19-nov-2023",
-        },
-        {
-          id: 3,
-          name: "Dr Mandy",
-          career: "Cardiologist",
-          image: require('../assets/bruno.jpg'),
-          time: "  10:30",
-          date: "  19-nov-2023",
-        },
-        {
-            id: 4,
-            name: "Dr Simons",
-            career: "Cardiologist",
-            image: require('../assets/bruno.jpg'),
-            time: "  10:30",
-            date: "  19-nov-2023",
-          }
-      ]);
+  var nurse="https://firebasestorage.googleapis.com/v0/b/sassa-c2b7f.appspot.com/o/stethoscope.png?alt=media&token=824748c9-89c0-4b16-9fe4-4e0b6e25c63a";
+  
+  const {currentVisitorId} = React.useContext(AppContext);
+  const [appointmentId, SetAppointid] = React.useState('');
+  interface FirestoreData {
+    id: string;
+    dateapoint: string;
+    timebooked: string;
+    doctor: string;
+    doctorId: string;
+    doctorImage: string;
+    iscancelled: string;
+    patientId: string;
+    patientName: string;
+    resheduleStatus: string;
+    sheduleRequestDate: string;
+    specialization: string;
+    binValue:string;
+  }
+  const [appointments, setAppointments] = React.useState<FirestoreData[]>([]);
+  function onResult(QuerySnapshot: any) {
+    const fetchedData: FirestoreData[] = [];
+    QuerySnapshot.forEach((documentSnapshot: any) => {
+      if (
+        documentSnapshot.data()?.iscancelled == 'yes' &&
+        documentSnapshot.data()?.patientId == currentVisitorId && 
+        (documentSnapshot.data()?.bin).includes(currentVisitorId)==false
+      ) {
+        fetchedData.push({
+          id: String(documentSnapshot?.id),
+          doctor: String(documentSnapshot.data()?.doctor),
+          dateapoint: String(documentSnapshot.data()?.dateapoint),
+          timebooked:String(documentSnapshot.data()?.timebooked),
+          doctorId: String(documentSnapshot.data()?.doctorId),
+          doctorImage: String(documentSnapshot.data()?.doctorImage),
+          iscancelled: String(documentSnapshot.data()?.iscancelled),
+          patientId: String(documentSnapshot.data()?.patientId),
+          patientName: String(documentSnapshot.data()?.patientName),
+          resheduleStatus: String(documentSnapshot.data()?.resheduleStatus),
+          sheduleRequestDate: String(documentSnapshot.data()?.sheduleRequestDate),
+          specialization: String(documentSnapshot.data()?.specialization),
+          binValue:String(documentSnapshot.data()?.bin)
+        });
+      }
+      setAppointments(fetchedData);
+    });
+  }
+
+  function onError(error: any) {
+    Alert.alert('Firebase error', String(error));
+  }
+
+  const handleDelete=(id:string,binValue:string)=>{
+    Alert.alert('Deleting','You are about to delete this item',[
+      {text:'Yes delete',onPress:()=>{
+        firestore()
+              .collection('Apointments')
+              .doc(id)
+              .update({
+                bin: binValue+currentVisitorId,
+              })
+              .catch(err => console.log(String(err)));
+      }},
+      {
+        text:'no', onPress:()=>{}
+      }
+    ]);
+  }
+
+  useEffect(() => {
+    const subscriber = firestore()
+      .collection('Apointments')
+      .onSnapshot(onResult, onError);
+    return () => subscriber();
+  }, []);
     return ( 
         <FlatList
         showsVerticalScrollIndicator={false}
@@ -51,11 +95,13 @@ const Canceled = () => {
           data={appointments}
           renderItem={({ item }) => (
             <Card key={item.id} style={{ marginTop: 10, backgroundColor: '#FAFAFD' }}>
-              <Image style={styles.imageIN} source={item.image} />
+              <Image style={styles.imageIN} source={{uri: String(item?.doctorImage).includes('http') ? String(item?.doctorImage) : String(nurse) }} />
+              <TouchableOpacity onPress={()=>handleDelete(item.id,item.binValue)}>
+              <MaterialCommunityIcons name="delete-empty" size={24} color="black" />
+              </TouchableOpacity>
+              <Text style={styles.itemN}>{item?.doctor}</Text>
   
-              <Text style={styles.itemN}>{item.name}</Text>
-  
-              <Text style={styles.itemC}>{item.career}</Text>
+              <Text style={styles.itemC}>{item?.specialization}</Text>
   
               <Card style={{ backgroundColor: '#FAFAFD', margin: 5 }}>
                 <View style={styles.ItemC2}>
@@ -67,7 +113,7 @@ const Canceled = () => {
                     />
                     <Text style={styles.itemT}>
   
-                      {item.time}
+                      {item?.timebooked}
                     </Text>
   
                   </View>
@@ -76,7 +122,7 @@ const Canceled = () => {
                     <Ionicons name="calendar-outline" color="#FFBD11" size={20} />
                     <Text style={styles.itemT}>
   
-                      {item.date}
+                      {item?.dateapoint}
                     </Text>
   
                   </View>
@@ -179,7 +225,8 @@ const styles = StyleSheet.create({
       fontWeight: "bold",
       bottom: "20%",
       left: "10%",
-      color: 'black'
+      color: 'black',
+      textDecorationLine:'line-through'
     },
   
     itemC: {
@@ -188,6 +235,7 @@ const styles = StyleSheet.create({
       bottom: "20%",
       left: "10%",
       color: "#726C6C",
+      textDecorationLine:'line-through'
     },
   
     ItemC2: {
