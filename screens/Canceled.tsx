@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect }, { useEffect } from 'react';
 import { Card } from "react-native-paper";
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import {
@@ -7,7 +7,11 @@ import {
     View,
     Image,
     FlatList,Alert,TouchableOpacity
+    FlatList,Alert,TouchableOpacity
   } from "react-native";
+import { AppContext } from '../AppManager/Manager';
+import firestore from '@react-native-firebase/firestore';
+import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import { AppContext } from '../AppManager/Manager';
 import firestore from '@react-native-firebase/firestore';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
@@ -223,8 +227,7 @@ const styles = StyleSheet.create({
       fontWeight: "bold",
       bottom: "20%",
       left: "10%",
-      color: 'black',
-      textDecorationLine:'line-through'
+      color: 'black'
     },
   
     itemC: {
