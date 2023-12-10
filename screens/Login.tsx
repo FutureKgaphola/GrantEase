@@ -1,3 +1,4 @@
+import "../ignoreWarnings";
 import  React from 'react';
 import {
   Alert,

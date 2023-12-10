@@ -33,7 +33,7 @@ const Register = ({navigation}: {navigation: any}) => {
         Email: email.trim(),
         IDno: SAID,
         Name: name,
-        applied: 'not submitted',
+        applied: 'no application',
         certificateUrl: 'not applicable',
         finance: 'not approved',
         illness: 'not applicable',

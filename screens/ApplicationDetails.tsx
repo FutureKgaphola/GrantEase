@@ -2,7 +2,7 @@ import { useEffect, useState, useContext } from 'react';
 import {
   Text,
   View,
-  Alert, PermissionsAndroid, Platform
+  Alert, PermissionsAndroid, Platform, TouchableOpacity
 } from 'react-native';
 import { ActivityIndicator, MD2Colors } from 'react-native-paper';
 import firestore from '@react-native-firebase/firestore';
@@ -11,8 +11,9 @@ import DocumentPicker from 'react-native-document-picker';
 import Octicons from 'react-native-vector-icons/Octicons';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import Ionicons from 'react-native-vector-icons/Ionicons';
-import { Button, TextInput } from 'react-native-paper';
+import { Button, TextInput,Snackbar } from 'react-native-paper';
 import { AppContext } from '../AppManager/Manager';
+import Finance from '../components/Finance';
 
 const ApplicationDetails = ({ navigation }: { navigation: any }) => {
   const [fileName, setFileName] = useState('');
@@ -20,11 +21,36 @@ const ApplicationDetails = ({ navigation }: { navigation: any }) => {
   const [SaID, setSAid] = useState('');
   const [startup, setupload] = useState('');
   const [Totalup, setTotalup] = useState('');
+  const [IsApproved,setIsApproved]=useState(false);
+  const [visible, setVisible] = useState(false);
+  const onDismissSnackBar = () => setVisible(false);
   const { currentVisitorName, currentVisitorId } = useContext(AppContext);
 
   useEffect(() => {
-    requestPermission()
+    requestPermission();
+    getStatusApproval();
+    //
   }, []);
+
+  const refreshPage=()=>{
+    getStatusApproval();
+  }
+  const getStatusApproval=()=>{
+    firestore()
+    .collection('users')
+    .where('userId', '==', currentVisitorId.trim()).get()
+    .then(querySnapshot => {
+      if (querySnapshot.size==1) { 
+        querySnapshot.forEach(documentSnapshot => {
+          if(documentSnapshot.data()?.medical=="approved"){
+            setIsApproved(true);
+          }else{
+            setIsApproved(false);
+          }
+        })
+      }
+    })
+  }
 
   const requestPermission = async () => {
     try {
@@ -130,7 +156,10 @@ const ApplicationDetails = ({ navigation }: { navigation: any }) => {
                     filelink: url,
                     fileName: fileName,
                     userId: currentVisitorId,
-                    applyDate:new Date().toLocaleDateString()
+                    applyDate:new Date().toLocaleDateString(),
+                    Hrfile:"no file",
+                    HrfileName:"no file name"
+                    
                   })
                   .then(() => {
                     //update my application status to submitted
@@ -138,13 +167,13 @@ const ApplicationDetails = ({ navigation }: { navigation: any }) => {
                     .collection('users')
                     .doc(currentVisitorId)
                     .update({
-                      applied: 'application submitted',
+                      applied: 'medical letter submitted',
                     }).catch(err=>console.log(String(err)))
                     setupload('');
                     setTotalup('');
                     setFileName('');
                     setSAid('');
-                    Alert.alert('Succesfull', 'You have uploaded your details to our Medical Department.\n A doctor will be assigned to you once your details are reviewed.');
+                    Alert.alert('Succesful', 'You have uploaded your details to our Medical Department.\n A doctor will be assigned to you once your details are reviewed.');
                   }).catch((err) => {
     
                     setupload('');
@@ -190,9 +219,13 @@ const ApplicationDetails = ({ navigation }: { navigation: any }) => {
           }}>
           Back
         </Button>
+        <TouchableOpacity onPress={()=>refreshPage()} style={{marginLeft:10,alignSelf:'center'}}><Ionicons name="refresh" size={24} color="black" /></TouchableOpacity>
       </View>
 
-      <TextInput
+      {
+        IsApproved==false ? 
+        <>
+        <TextInput
         outlineColor="white"
         activeOutlineColor="#FFBD11"
         mode="outlined"
@@ -246,7 +279,7 @@ const ApplicationDetails = ({ navigation }: { navigation: any }) => {
             if (SaID.length == 13 && fileName !== '') {
               Alert.alert(
                 'Confirnation',
-                `Your Details are about to be captured as follows:\n Name: ${currentVisitorName}\nID no: ${SaID}\nHospital Medical certificate:${fileName}`,
+                `Your Details are about to be captured as follows:\n Name: ${currentVisitorName}\nID no: ${SaID}\nHospital Medical certificate: ${fileName}`,
                 [
                   {
                     text: 'Ok',
@@ -265,11 +298,19 @@ const ApplicationDetails = ({ navigation }: { navigation: any }) => {
           }}>
           accept & send
         </Button>
-
-
       </View>
+        </>
+        :<Finance/>  
+      }
       {startup != '' && <View style={{ marginLeft: 10 }}><Text>uploading {startup}kb of {Totalup}kb</Text>
         <ActivityIndicator animating={true} color={MD2Colors.orangeA200} /></View>}
+        <Snackbar
+      duration={2000}
+        visible={visible}
+        onDismiss={onDismissSnackBar}
+        >
+        Refreshing...
+      </Snackbar>
     </View>
   );
 };

@@ -1,5 +1,6 @@
+import "./ignoreWarnings";
 import React from 'react';
-import {SafeAreaView, StatusBar, StyleSheet, Text} from 'react-native';
+import { StatusBar, StyleSheet} from 'react-native';
 import {NavigationContainer} from '@react-navigation/native';
 import {createNativeStackNavigator} from '@react-navigation/native-stack';
 import { PaperProvider } from 'react-native-paper';
@@ -8,6 +9,7 @@ import Login from './screens/Login';
 import { AppProvider } from './AppManager/Manager';
 import Register from './screens/Register';
 import Forgotpassword from './screens/Forgotpassword';
+
 
 const Stack = createNativeStackNavigator();
 

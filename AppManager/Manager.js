@@ -9,7 +9,6 @@ const AppProvider = ({ children }) => {
     const [currentVisitorName, SetcurrentVisitorName]=useState('');
     const [currentVisitorId, SetcurrentVisitorId]=useState('');
     const [currentData,SetcurrentData]=useState({});
-    console.log('helloa');
     useEffect(() => {
         const subscriber = firestore()
           .collection('users')
@@ -17,10 +16,8 @@ const AppProvider = ({ children }) => {
           .onSnapshot(documentSnapshot => {
             SetcurrentVisitorName(documentSnapshot.data()?.Name);
             SetcurrentData(documentSnapshot?.data());
-            console.log('User data: ', documentSnapshot?.data());
+
           });
-    
-        // Stop listening for updates when no longer required
         return () => subscriber();
       }, [currentVisitorId]);
 
