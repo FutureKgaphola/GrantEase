@@ -6,7 +6,6 @@ const Banner = () => {
     return ( 
       <View>
         <Image style={styles.Himage} source={require('../assets/pic1.jpg')} />
-        
       </View>
         
      );

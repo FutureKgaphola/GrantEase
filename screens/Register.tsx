@@ -29,28 +29,29 @@ const Register = ({navigation}: {navigation: any}) => {
 
     if(email.trim()!=='' && SAID.trim()!=="" && name!=="" && password!==""){
       setloading(true);
-      const data = {
-        Email: email.trim(),
-        IDno: SAID,
-        Name: name,
-        applied: 'no application',
-        certificateUrl: 'not applicable',
-        finance: 'not approved',
-        illness: 'not applicable',
-        medcertificate: 'not applicable',
-        medical: 'not approved',
-        profimage: 'no image',
-        signmethod: 'email and password',
-      };
   
       auth()
         .createUserWithEmailAndPassword(email.trim(), password)
         .then((res) => {
           firestore()
             .collection('users').doc(res.user.uid)
-            .set(data)
+            .set({
+              Email: email.trim(),
+              IDno: SAID,
+              Name: name,
+              applied: 'no application',
+              certificateUrl: 'not applicable',
+              finance: 'not approved',
+              illness: 'not applicable',
+              medcertificate: 'not applicable',
+              medical: 'not approved',
+              profimage: 'no image',
+              signmethod: 'email and password',
+              userId:res.user.uid
+            })
             .then(() => {
-              Alert.alert('Notification', 'Successfull registration', [
+              setloading(false);
+              Alert.alert('Notification', 'Successful registration', [
                 {text: 'OK', onPress: () => {
                   navigation.navigate('Login')
                 }},
@@ -70,6 +71,7 @@ const Register = ({navigation}: {navigation: any}) => {
         });
 
     }else{
+      setloading(false);
       Alert.alert('Form error',"Please fill in the form");
     }
     

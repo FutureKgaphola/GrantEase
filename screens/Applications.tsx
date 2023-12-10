@@ -1,4 +1,4 @@
-import {useState, useContext} from 'react';
+import {useState, useContext, useEffect} from 'react';
 import {
   StyleSheet,
   Text,
@@ -6,7 +6,7 @@ import {
   Image,
   ScrollView,
   Linking,
-  TouchableOpacity,
+  TouchableOpacity,Alert
 } from 'react-native';
 
 import Fontisto from 'react-native-vector-icons/Fontisto';
@@ -21,14 +21,40 @@ const Applications = ({navigation}: {navigation: any}) => {
   const account = async () => {
     var persitentData = await getData();
   };
-
+  const [payments, setPayments] = useState<FirestoreData[]>([]);
   account();
-  const {currentData, SetcurrentData, currentVisitorId} =
+  const {currentData, currentVisitorId} =
     useContext(AppContext);
-  const [payments, setPayments] = useState([
-    {id: 1, date: '04 december 2023'},
-    {id: 2, date: '02 december 2023'},
-  ]);
+
+    interface FirestoreData {
+      id: string;
+      Authorizer: string;
+      Date: string;
+    }
+
+    useEffect(()=>{
+      const subscriber = firestore()
+      .collection('paymentsDates')
+      .onSnapshot(onResult, onError);
+    return () => subscriber();
+    },[]);
+
+    function onError(error: any) {
+      Alert.alert('Firebase error', String(error));
+    }
+    function onResult(QuerySnapshot: any){
+      const fetchedData: FirestoreData[] = [];
+      QuerySnapshot.forEach((documentSnapshot: any) => {
+        fetchedData.push({
+          id:String(documentSnapshot?.id),
+          Authorizer: String(documentSnapshot.data()?.Authorizer),
+          Date: String(documentSnapshot.data()?.Date),
+        })
+
+        setPayments(fetchedData);
+      })
+    }
+  
 
   const DownloadUrApplication = () => {
     firestore()
@@ -165,7 +191,7 @@ const Applications = ({navigation}: {navigation: any}) => {
                       paddingLeft: 5,
                     }}>
                     <Fontisto name="date" size={24} color="black" />
-                    <Text style={styles.txtP}>{item.date}</Text>
+                    <Text style={styles.txtP}>{item?.Date}</Text>
                   </View>
                 </Card>
               ))

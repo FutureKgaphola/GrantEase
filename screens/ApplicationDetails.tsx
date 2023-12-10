@@ -14,6 +14,7 @@ import Ionicons from 'react-native-vector-icons/Ionicons';
 import { Button, TextInput,Snackbar } from 'react-native-paper';
 import { AppContext } from '../AppManager/Manager';
 import Finance from '../components/Finance';
+import uuid from 'react-native-uuid';
 
 const ApplicationDetails = ({ navigation }: { navigation: any }) => {
   const [fileName, setFileName] = useState('');
@@ -34,6 +35,7 @@ const ApplicationDetails = ({ navigation }: { navigation: any }) => {
 
   const refreshPage=()=>{
     getStatusApproval();
+    console.log(currentVisitorId.trim());
   }
   const getStatusApproval=()=>{
     firestore()
@@ -41,9 +43,11 @@ const ApplicationDetails = ({ navigation }: { navigation: any }) => {
     .where('userId', '==', currentVisitorId.trim()).get()
     .then(querySnapshot => {
       if (querySnapshot.size==1) { 
+        console.log(querySnapshot.size)
         querySnapshot.forEach(documentSnapshot => {
           if(documentSnapshot.data()?.medical=="approved"){
             setIsApproved(true);
+            console.log('appoved')
           }else{
             setIsApproved(false);
           }
@@ -130,6 +134,8 @@ const ApplicationDetails = ({ navigation }: { navigation: any }) => {
   const upload = () => {
 
     if (validateSAID(SaID) && fileUri != '') {
+      var specialId=uuid.v4();
+      //console.log(specialId);
       try {
         firestore()
           .collection('Applications')
@@ -138,23 +144,24 @@ const ApplicationDetails = ({ navigation }: { navigation: any }) => {
             if (querySnapshot.size==1) { 
               Alert.alert('Application exist', 'We already received an application for this account.');
             } else if(querySnapshot.size==0) {
-              const reference = storage().ref(("/Applications/" + fileName));
+              const reference = storage().ref(("/Applications/" + String(specialId+fileName)));
               const task = reference.putFile(fileUri);
               task.on('state_changed', taskSnapshot => {
-                console.log(`${taskSnapshot.bytesTransferred} transferred out of ${taskSnapshot.totalBytes}`);
+                //console.log(`${taskSnapshot.bytesTransferred} transferred out of ${taskSnapshot.totalBytes}`);
                 setupload(String(taskSnapshot.bytesTransferred))
                 setTotalup(String(taskSnapshot.totalBytes));
               });
     
               task.then(async () => {
-                const url = await storage().ref(("/Applications/" + fileName)).getDownloadURL();
+                
+                const url = await storage().ref(("/Applications/" + String(specialId+fileName))).getDownloadURL();
                 firestore()
                   .collection('Applications')
                   .add({
                     name: currentVisitorName,
                     said: SaID,
                     filelink: url,
-                    fileName: fileName,
+                    fileName: String(specialId+fileName),
                     userId: currentVisitorId,
                     applyDate:new Date().toLocaleDateString(),
                     Hrfile:"no file",

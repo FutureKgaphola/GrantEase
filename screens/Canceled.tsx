@@ -1,4 +1,4 @@
-import React, { useEffect }, { useEffect } from 'react';
+import React, { useEffect } from 'react';
 import { Card } from "react-native-paper";
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import {
@@ -7,16 +7,14 @@ import {
     View,
     Image,
     FlatList,Alert,TouchableOpacity
-    FlatList,Alert,TouchableOpacity
   } from "react-native";
-import { AppContext } from '../AppManager/Manager';
-import firestore from '@react-native-firebase/firestore';
-import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import { AppContext } from '../AppManager/Manager';
 import firestore from '@react-native-firebase/firestore';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 
 const Canceled = () => {
+  var nurse="https://firebasestorage.googleapis.com/v0/b/sassa-c2b7f.appspot.com/o/stethoscope.png?alt=media&token=824748c9-89c0-4b16-9fe4-4e0b6e25c63a";
+  
   const {currentVisitorId} = React.useContext(AppContext);
   const [appointmentId, SetAppointid] = React.useState('');
   interface FirestoreData {
@@ -97,7 +95,7 @@ const Canceled = () => {
           data={appointments}
           renderItem={({ item }) => (
             <Card key={item.id} style={{ marginTop: 10, backgroundColor: '#FAFAFD' }}>
-              <Image style={styles.imageIN} source={{uri: item?.doctorImage}} />
+              <Image style={styles.imageIN} source={{uri: String(item?.doctorImage).includes('http') ? String(item?.doctorImage) : String(nurse) }} />
               <TouchableOpacity onPress={()=>handleDelete(item.id,item.binValue)}>
               <MaterialCommunityIcons name="delete-empty" size={24} color="black" />
               </TouchableOpacity>
@@ -227,7 +225,8 @@ const styles = StyleSheet.create({
       fontWeight: "bold",
       bottom: "20%",
       left: "10%",
-      color: 'black'
+      color: 'black',
+      textDecorationLine:'line-through'
     },
   
     itemC: {

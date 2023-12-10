@@ -30,6 +30,7 @@
     "react-native-screens": "^3.27.0",
     "react-native-snap-carousel": "^3.9.1",
     "react-native-splash-screen": "^3.3.0",
+    "react-native-uuid": "^2.0.1",
     "react-native-vector-icons": "^10.0.2",
     "react-native-video": "^5.2.1",
     "react-native-webview": "^13.6.3"
