@@ -12,19 +12,12 @@ import Feed from './Feed';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import Exit from './Exit';
 import Ionicons from 'react-native-vector-icons/Ionicons';
+import EvilIcons from 'react-native-vector-icons/EvilIcons';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
+import Profile from './Profile';
 const Tab = createBottomTabNavigator();
 
 const Home =({navigation}: {navigation: any}) => {
-
-  const account=async()=>{
-
-    console.log(await getData());
-    console.log(await getstoreSignInMethod());
-    
-    }
-  
-  account();
   return (
     <PaperProvider>
   
@@ -41,9 +34,17 @@ const Home =({navigation}: {navigation: any}) => {
         <Tab.Screen name="Feed" component={Feed} options={{
           title:'',
           headerShown:false,
-          tabBarLabel: 'More',
+          tabBarLabel: 'About',
           tabBarIcon: ({ color, size }) => (
             <MaterialCommunityIcons name="webhook" size={24} color="black" />
+          ),
+        }}/>
+        <Tab.Screen name="Profile" component={Profile} options={{
+          title:'',
+          headerShown:false,
+          tabBarLabel: 'Profile',
+          tabBarIcon: ({ color, size }) => (
+            <EvilIcons name="user" size={24} color="black" />
           ),
         }}/>
         <Tab.Screen name="Exit" component={Exit} options={{

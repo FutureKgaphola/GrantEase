@@ -8,7 +8,7 @@ import {
   Linking,
   TouchableOpacity,Alert
 } from 'react-native';
-
+import storage from "@react-native-firebase/storage";
 import Fontisto from 'react-native-vector-icons/Fontisto';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import {Button, Card} from 'react-native-paper';
@@ -57,27 +57,144 @@ const Applications = ({navigation}: {navigation: any}) => {
   
 
   const DownloadUrApplication = () => {
-    firestore()
-      .collection('Applications')
-      .where('userId', '==', currentVisitorId.trim())
-      .get()
-      .then(querySnapshot => {
-        if (querySnapshot.size == 1) {
-          querySnapshot.forEach(documentSnapshot => {
-            const fileUrl = documentSnapshot.data().filelink;
-            const Hrfile= documentSnapshot.data().Hrfile;
-            if(fileUrl.includes("http")){
-              Linking.openURL(fileUrl)
-              .catch(err => console.error('Error opening external link:', err))
+    Alert.alert("Notification",'Would you like to download your personal documents shared to GrantEase or withdraw your application ?',
+    [
+      {
+        text: 'download',
+        onPress: () => {
+          firestore()
+          .collection('Applications')
+          .where('userId', '==', currentVisitorId.trim())
+          .get()
+          .then(querySnapshot => {
+            if (querySnapshot.size == 1) {
+              querySnapshot.forEach(documentSnapshot => {
+                const fileUrl = documentSnapshot.data().filelink;
+                const Hrfile= documentSnapshot.data().Hrfile;
+                if(fileUrl.includes("http")){
+                  Linking.openURL(fileUrl)
+                  .catch(err => console.error('Error opening external link:', err))
+                }
+                if(Hrfile.includes("http")){
+                  Linking.openURL(Hrfile)
+                  .catch(err => console.error('Error opening external link:', err))
+                }
+    
+              });
             }
-            if(Hrfile.includes("http")){
-              Linking.openURL(Hrfile)
-              .catch(err => console.error('Error opening external link:', err))
-            }
-
           });
+
         }
-      });
+        ,
+        style: 'cancel',
+      },
+      {text: 'withdraw', onPress: () => {
+        withdrawApplication();
+
+      }},
+
+      {text: 'not now', onPress: () => {}},
+    ]);
+
+    const withdrawApplication = () => {
+      firestore()
+        .collection('Applications')
+        .where('userId', '==', currentVisitorId.trim())
+        .get()
+        .then(querySnapshot => {
+          if (querySnapshot.size == 1) {
+            querySnapshot.forEach(documentSnapshot => {
+              let Hrfile = documentSnapshot.data()?.Hrfile;
+              let HrfileName = documentSnapshot.data()?.HrfileName;
+              let fileName=documentSnapshot.data()?.fileName;
+              let filelink=documentSnapshot.data()?.filelink;
+
+              var docId=currentData?.applicationId;
+              console.log(currentData?.applicationId);
+  
+              if (Hrfile.includes('http') && HrfileName !== '') {
+                storage()
+                  .ref('/Applications/' + HrfileName)
+                  .delete()
+                  .then(() => {
+  
+                    if (Hrfile.includes('http')) {
+                      firestore()
+                        .collection('Applications')
+                        .doc(docId)
+                        .delete()
+                        .then(() => {
+                          firestore()
+                            .collection('users')
+                            .doc(currentVisitorId)
+                            .update({
+                              applied: 'external medical letter submitted',
+                              
+                            });
+                          Alert.alert(
+                            'Application Withdrawal',
+                            'You have withdrawn your application from the finance team',
+                          );
+                          
+                        })
+                        .catch(err => {
+                          Alert.alert(
+                            'Withdrawal error',
+                            'Something went wrong : ' + String(err),
+                          );
+                        });
+                    } 
+                  })
+                  .catch(err => {
+                    Alert.alert('Withdrawal error', String(err));
+                  });
+              } 
+              if (filelink.includes('http') && fileName !== '') {
+                storage()
+                  .ref('/Applications/' + fileName)
+                  .delete()
+                  .then(() => {
+  
+                    if (filelink.includes('http')) {
+                      firestore()
+                        .collection('Applications')
+                        .doc(docId)
+                        .delete()
+                        .then(() => {
+                          firestore()
+                            .collection('users')
+                            .doc(currentVisitorId)
+                            .update({
+                              applied: 'not submitted',
+                              medcertificate: 'not applicable',
+                              medical: 'not approved',
+                              illness: 'not applicable',
+                              
+                            });
+                          Alert.alert(
+                            'Application Withdrawal',
+                            'You have withdrawn your application from our Receiving desk team',
+                          );
+                        })
+                        .catch(err => {
+                          Alert.alert(
+                            'Withdrawal error',
+                            'Something went wrong : ' + String(err),
+                          );
+                        });
+                    } 
+                  })
+                  .catch(err => {
+                    Alert.alert('Withdrawal error', String(err));
+                  });
+              } 
+
+
+            });
+          }
+        });
+    };
+    
   };
   return (
     <View style={styles.container}>
@@ -120,7 +237,7 @@ const Applications = ({navigation}: {navigation: any}) => {
             <Text style={{marginLeft: 5}}>
               Medical Certificate : {currentData?.medical}
             </Text>
-            {currentData?.applied == 'medical letter submitted' ||
+            {currentData?.applied == 'external medical letter submitted' ||
             currentData?.applied == 'final application processing' ? (
               <TouchableOpacity onPress={() => DownloadUrApplication()}>
                 <Text
@@ -132,6 +249,7 @@ const Applications = ({navigation}: {navigation: any}) => {
                   {currentData?.applied}
                 </Text>
               </TouchableOpacity>
+              
             ) : null}
           </View>
           <View>

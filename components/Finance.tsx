@@ -131,7 +131,7 @@ const Finance = () => {
           if (medcertificate.includes('https')) {
             PickAllowed();
           } else {
-            Alert.alert('Missing document', 'No medical letter found. you dont have the sassa medical letter yet from our internal doctors.');
+            Alert.alert('Missing document', 'No medical letter found. you dont have the sassa medical letter/medical report yet from our internal doctors.');
           }
         });
       });
@@ -156,69 +156,7 @@ const Finance = () => {
       });
   };
 
-  const withdrawApplication = () => {
-    firestore()
-      .collection('Applications')
-      .where('userId', '==', currentVisitorId.trim())
-      .get()
-      .then(querySnapshot => {
-        if (querySnapshot.size == 1) {
-          querySnapshot.forEach(documentSnapshot => {
-            let Hrfile = documentSnapshot.data()?.Hrfile;
-            let HrfileName = documentSnapshot.data()?.HrfileName;
-            docId=documentSnapshot.id;
-
-            if (Hrfile.includes('http') && HrfileName !== '') {
-              storage()
-                .ref('/Applications/' + HrfileName)
-                .delete()
-                .then(() => {
-
-                  if (Hrfile.includes('http')) {
-                    firestore()
-                      .collection('Applications')
-                      .doc(docId)
-                      .update({
-                        Hrfile: 'no file',
-                        HrfileName: 'no file name',
-                      })
-                      .then(() => {
-                        firestore()
-                          .collection('users')
-                          .doc(currentVisitorId)
-                          .update({
-                            applied: 'medical letter submitted',
-                            medcertificate: 'not applicable',
-                          });
-                        Alert.alert(
-                          'Application Withdrawal',
-                          'You have withdrawn your application from the finance team',
-                        );
-                        
-                      })
-                      .catch(err => {
-                        Alert.alert(
-                          'Withdrawal error',
-                          'Something went wrong : ' + String(err),
-                        );
-                      });
-                  } else {
-                    ///remove withdrawal button
-                    setDisabled(true);
-                  }
-                })
-                .catch(err => {
-                  Alert.alert('Withdrawal error', String(err));
-                });
-            } else {
-              ///remove withdrawal button
-              setVisible(true);
-              setDisabled(true);
-            }
-          });
-        }
-      });
-  };
+ 
   const getform = () => {
     const formUrl =
       'https://firebasestorage.googleapis.com/v0/b/sassa-c2b7f.appspot.com/o/MedicalAssessmentReferralForm.pdf?alt=media&token=cad67df0-138f-4efa-a556-f4eba1022726';
@@ -231,7 +169,7 @@ const Finance = () => {
     <ScrollView style={{padding: 5}} showsVerticalScrollIndicator={false}>
       <Text>
         {
-          '1. Download the letter and form below\n 2. then upload them back to us as a merged signgle document. \n 3. Done, now wait for your financial state to change to uproved/declined or for any communication from uor team'
+          '1. Download the letter and form below\n 2. then upload them back to us as a merged signgle document. \n 3. Done, now wait for your financial state to change to uproved/declined or for any communication from our team'
         }
       </Text>
 
@@ -284,22 +222,6 @@ const Finance = () => {
         Accept & submit
       </Button>
 
-      <Button
-        disabled={isDisabled}
-        icon={() => (
-          <Ionicons
-            name="chevron-back-circle-outline"
-            color="black"
-            size={24}
-          />
-        )}
-        rippleColor={'#FFBD11'}
-        textColor="black"
-        style={{borderColor: '#FFBD11', marginTop: 10}}
-        mode="outlined"
-        onPress={() => withdrawApplication()}>
-        withdraw application
-      </Button>
       {startup != '' && (
         <View style={{marginLeft: 10}}>
           <Text>

@@ -15,17 +15,19 @@ import { Button, TextInput,Snackbar } from 'react-native-paper';
 import { AppContext } from '../AppManager/Manager';
 import Finance from '../components/Finance';
 import uuid from 'react-native-uuid';
+import { isValidSAIDNumber } from '../validator/SAid';
 
 const ApplicationDetails = ({ navigation }: { navigation: any }) => {
+  const {currentData, currentVisitorName, currentVisitorId } = useContext(AppContext);
   const [fileName, setFileName] = useState('');
   const [fileUri, setfileUri] = useState('');
-  const [SaID, setSAid] = useState('');
+  const SaID=currentData?.IDno;
   const [startup, setupload] = useState('');
   const [Totalup, setTotalup] = useState('');
   const [IsApproved,setIsApproved]=useState(false);
   const [visible, setVisible] = useState(false);
   const onDismissSnackBar = () => setVisible(false);
-  const { currentVisitorName, currentVisitorId } = useContext(AppContext);
+  
 
   useEffect(() => {
     requestPermission();
@@ -35,7 +37,6 @@ const ApplicationDetails = ({ navigation }: { navigation: any }) => {
 
   const refreshPage=()=>{
     getStatusApproval();
-    console.log(currentVisitorId.trim());
   }
   const getStatusApproval=()=>{
     firestore()
@@ -132,8 +133,8 @@ const ApplicationDetails = ({ navigation }: { navigation: any }) => {
     return (10 - (total % 10)) % 10;
   }
   const upload = () => {
-
-    if (validateSAID(SaID) && fileUri != '') {
+    const isValid = isValidSAIDNumber(SaID);
+    if (isValid && fileUri != '') {
       var specialId=uuid.v4();
       //console.log(specialId);
       try {
@@ -165,22 +166,25 @@ const ApplicationDetails = ({ navigation }: { navigation: any }) => {
                     userId: currentVisitorId,
                     applyDate:new Date().toLocaleDateString(),
                     Hrfile:"no file",
-                    HrfileName:"no file name"
-                    
+                    HrfileName:"no file name",
+                    profileimage:currentData?.profimage,
+                    doctorName:'none',
+                    doctorId:'none',
+                    email:currentData?.Email
                   })
-                  .then(() => {
+                  .then((resp) => {
                     //update my application status to submitted
                     firestore()
                     .collection('users')
                     .doc(currentVisitorId)
                     .update({
-                      applied: 'medical letter submitted',
+                      applied: 'external medical letter submitted',
+                      applicationId:resp.id
                     }).catch(err=>console.log(String(err)))
                     setupload('');
                     setTotalup('');
                     setFileName('');
-                    setSAid('');
-                    Alert.alert('Succesful', 'You have uploaded your details to our Medical Department.\n A doctor will be assigned to you once your details are reviewed.');
+                    Alert.alert('Succesful', 'You have uploaded your details to our Application receive Desk.\n A doctor will be assigned to you once your details are reviewed.');
                   }).catch((err) => {
     
                     setupload('');
@@ -232,23 +236,8 @@ const ApplicationDetails = ({ navigation }: { navigation: any }) => {
       {
         IsApproved==false ? 
         <>
-        <TextInput
-        outlineColor="white"
-        activeOutlineColor="#FFBD11"
-        mode="outlined"
-        label="Enter SA ID no"
-        placeholder="Enter SA ID no"
-        onChangeText={(text) => setSAid(text)}
-        value={SaID}
-        inputMode='numeric'
-        maxLength={13}
-        placeholderTextColor={'#C7C7C7'}
-        left={
-          <TextInput.Icon
-            icon={() => <Octicons name="number" size={24} color="black" />}
-          />
-        }
-      />
+        <Text>Take note of you SA ID number as recorded with us. if you think this is wrong please go update you profile before attempting a submittion.</Text>
+        <Text>{SaID}</Text>
 
       <View style={{ flexDirection: 'row' }}>
         <Button
@@ -264,7 +253,7 @@ const ApplicationDetails = ({ navigation }: { navigation: any }) => {
           style={{ borderColor: '#FFBD11', backgroundColor: '#FFBD11' }}
           mode="elevated"
           onPress={() => selectDoc()}>
-          Atatch medical letter
+          Attach medical letter
         </Button>
 
       </View>
@@ -299,7 +288,7 @@ const ApplicationDetails = ({ navigation }: { navigation: any }) => {
                 ],
               );
             } else {
-              Alert.alert('Form error', 'Please fill in the form');
+              Alert.alert('Form error', 'Please make sure you have submitted a valid SA ID number. you may update this in you profile tab or screen');
             }
 
           }}>

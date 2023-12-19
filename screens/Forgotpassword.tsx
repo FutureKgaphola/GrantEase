@@ -51,8 +51,8 @@ const Forgotpassword = () => {
       <ScrollView
         contentContainerStyle={{flexGrow: 1, backgroundColor: '#fff'}}>
         <Image
-          style={{width: '100%', height: 300, objectFit: 'contain'}}
-          source={require('../assets/banner.png')}
+          style={{width: '100%', height: 300, objectFit: 'contain',marginTop:10}}
+          source={require('../assets/grantlogo.png')}
         />
         <Text>FORGOT PASSWORD?</Text>
         <Text>Enter the email address associated with your account</Text>

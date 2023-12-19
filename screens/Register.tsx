@@ -16,6 +16,7 @@ import Octicons from 'react-native-vector-icons/Octicons';
 import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
 import firestore from '@react-native-firebase/firestore';
 import auth from '@react-native-firebase/auth';
+import { isValidSAIDNumber } from '../validator/SAid';
 
 const Register = ({navigation}: {navigation: any}) => {
   const [email, setemail] = React.useState('');
@@ -26,66 +27,74 @@ const Register = ({navigation}: {navigation: any}) => {
   const [loading,setloading]=React.useState(false);
 
   const sigup = () => {
+    if(isValidSAIDNumber(SAID.trim())){
 
-    if(email.trim()!=='' && SAID.trim()!=="" && name!=="" && password!==""){
-      setloading(true);
+      if(email.trim()!=='' && name!=="" && password!==""){
+        setloading(true);
+    
+        auth()
+          .createUserWithEmailAndPassword(email.trim(), password)
+          .then((res) => {
+            firestore()
+              .collection('users').doc(res.user.uid)
+              .set({
+                Email: email.trim(),
+                IDno: SAID,
+                Name: name,
+                applied: 'no application',
+                certificateUrl: 'not applicable',
+                finance: 'not approved',
+                illness: 'not applicable',
+                medcertificate: 'not applicable',
+                medical: 'not approved',
+                profimage: 'no image',
+                signmethod: 'email and password',
+                userId:res.user.uid,
+                applicationId:""
+              })
+              .then(() => {
+                setloading(false);
+                Alert.alert('Notification', 'Successful registration', [
+                  {text: 'OK', onPress: () => {
+                    navigation.navigate('Login')
+                  }},
+                ]);
+              });
+          })
+          .catch(error => {
+            setloading(false);
+            if (error.code === 'auth/email-already-in-use') {
+              Alert.alert("Firebase error",'That email address is already in use!');
+            }
+            if (error.code === 'auth/invalid-email') {
+              Alert.alert("Firebase error",'That email address is invalid!');
+            }
+    
+            Alert.alert("Firebase error",String(error));
+          });
   
-      auth()
-        .createUserWithEmailAndPassword(email.trim(), password)
-        .then((res) => {
-          firestore()
-            .collection('users').doc(res.user.uid)
-            .set({
-              Email: email.trim(),
-              IDno: SAID,
-              Name: name,
-              applied: 'no application',
-              certificateUrl: 'not applicable',
-              finance: 'not approved',
-              illness: 'not applicable',
-              medcertificate: 'not applicable',
-              medical: 'not approved',
-              profimage: 'no image',
-              signmethod: 'email and password',
-              userId:res.user.uid
-            })
-            .then(() => {
-              setloading(false);
-              Alert.alert('Notification', 'Successful registration', [
-                {text: 'OK', onPress: () => {
-                  navigation.navigate('Login')
-                }},
-              ]);
-            });
-        })
-        .catch(error => {
-          setloading(false);
-          if (error.code === 'auth/email-already-in-use') {
-            Alert.alert("Firebase error",'That email address is already in use!');
-          }
-          if (error.code === 'auth/invalid-email') {
-            Alert.alert("Firebase error",'That email address is invalid!');
-          }
-  
-          Alert.alert("Firebase error",String(error));
-        });
+      }else{
+        setloading(false);
+        Alert.alert('Form error',"Please fill in the form");
+      }
 
     }else{
-      setloading(false);
-      Alert.alert('Form error',"Please fill in the form");
+      Alert.alert(
+        'Invalid SA ID',
+        'You SA Id is not correct',
+      );
     }
-    
+
   };
   return (
     <TouchableWithoutFeedback onPress={() => Keyboard.dismiss()}>
       <ScrollView
         contentContainerStyle={{flexGrow: 1, backgroundColor: '#fff'}}>
         <Image
-          style={{width: '100%', height: 300, objectFit: 'contain'}}
-          source={require('../assets/banner.png')}
+          style={{width: '100%', height: 300, objectFit: 'scale-down',marginTop:10}}
+          source={require('../assets/grantlogo.png')}
         />
-
-        <Text style={{marginLeft: 20}}>Setup for an account with us...</Text>
+        <Text style={{marginLeft: 20,color:'black',fontSize:15}}>Setup for an account with us...</Text>
 
         <Card style={{margin: 10, padding: 10}}>
           <TextInput

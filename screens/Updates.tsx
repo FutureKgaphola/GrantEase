@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { StyleSheet, Text, View, Image, Alert, FlatList, Dimensions, Linking, ScrollView } from 'react-native';
 import firestore from '@react-native-firebase/firestore';
-//import moment from 'moment';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { Card, Button,Avatar } from 'react-native-paper';
 import DateTimePicker from 'react-native-modal-datetime-picker';
@@ -11,23 +10,19 @@ import Carousel from 'react-native-snap-carousel';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 
 const Updates = () => {
-  var nurse="https://firebasestorage.googleapis.com/v0/b/sassa-c2b7f.appspot.com/o/stethoscope.png?alt=media&token=824748c9-89c0-4b16-9fe4-4e0b6e25c63a";
-  const data = [
-    { title: 'New payment method',
-    tumbnail:'https://firebasestorage.googleapis.com/v0/b/sassa-c2b7f.appspot.com/o/unnamed.jpg?alt=media&token=edf3a027-481f-40cf-b82e-2287f28a710c',
-    msg:'simply dummy text of the printing and typesetting',
-    url : 'https://www.gov.za/news/media-statements/deputy-minister-bernice-swarts-calls-inclusion-persons-living-disabilities' },
-    { title: '2024 Budget plan' ,
-    tumbnail:'https://firebasestorage.googleapis.com/v0/b/sassa-c2b7f.appspot.com/o/74814948_2334608276667502_4946840613094948864_n.png?alt=media&token=2ae41354-b341-4d5b-ab8c-83f841a696bf',
-    msg:'simply dummy text of the printing and typesetting',url : 'https://www.gov.za/news/media-statements/deputy-minister-bernice-swarts-calls-inclusion-persons-living-disabilities'},
-    { title: 'Disability grant new rule',
-    tumbnail:'https://firebasestorage.googleapis.com/v0/b/sassa-c2b7f.appspot.com/o/206556424_3849029101892071_8858586807174925879_n.png?alt=media&token=31755554-22bb-4477-bc04-64038953a686',
-    msg:'simply dummy text of the printing and typesetting',url : 'https://www.gov.za/news/media-statements/deputy-minister-bernice-swarts-calls-inclusion-persons-living-disabilities' },
-    // Add more items as needed
-  ];
+
+  const [data, setfeeds] = React.useState<FeedsData[]>([]);
+  interface FeedsData {
+    id: string;
+    title: string;
+    tumbnail: string;
+    msg: string;
+    url: string;
+  }
+  var nurse="https://firebasestorage.googleapis.com/v0/b/sassa-c2b7f.appspot.com/o/nurse.png?alt=media&token=b68ce278-88cb-4d84-bc5f-fc5b71660437";
+  
   const renderItem = ({ item }:{ item :any}) => (
     <View style={{margin:10}}>
-      
       <Card>
       <MaterialIcons name="rss-feed" size={19} color="black" />
     <Card.Title title={item?.title}/>
@@ -108,11 +103,34 @@ Linking.openURL(item.url).catch((err)=>{
   function onError(error: any) {
     Alert.alert('Firebase error', String(error));
   }
+  const onFeedResult=(QuerySnapshot: any)=>{
+    const fetchedData: FeedsData[] = [];
+    QuerySnapshot.forEach((documentSnapshot: any) => {
+      fetchedData.push(
+        {
+          id: String(documentSnapshot?.id),
+          title:String(documentSnapshot.data()?.title),
+          tumbnail:String(documentSnapshot.data()?.tumbnail),
+          msg:String(documentSnapshot.data()?.msg),
+          url:String(documentSnapshot.data()?.url)
+        }
+      )
+      
+    })
+    setfeeds(fetchedData);
+  }
+  const onFeedError=(error: any)=>{
+    Alert.alert('Firebase error', String(error));
+  }
 
   useEffect(() => {
     const subscriber = firestore()
       .collection('Apointments')
       .onSnapshot(onResult, onError);
+
+      const feed = firestore()
+      .collection('Feeds')
+      .onSnapshot(onFeedResult, onFeedError);
     return () => subscriber();
   }, []);
 
@@ -208,7 +226,9 @@ Linking.openURL(item.url).catch((err)=>{
 
   return (
     <ScrollView>
-
+      {
+        appointments.length==0  && <Text style={{margin:5}}>No appointments</Text>
+      }
 
     <DateTimePicker
         isVisible={isvisible}
@@ -317,7 +337,7 @@ Linking.openURL(item.url).catch((err)=>{
       sliderWidth={Dimensions.get('window').width-20}
       itemWidth={300}
       autoplay={true} 
-      autoplayInterval={4000} 
+      autoplayInterval={5000} 
       loop={true}
     />
     

@@ -120,9 +120,7 @@ const Login = ({navigation}: {navigation: any}) => {
       if (res) {
         Reset(false, false);
         setdisplay('block');
-        console.log('success');
         storeSignInMethod('google');
-        console.log(res);
 
         //check if exits first
         firestore()
@@ -144,6 +142,7 @@ const Login = ({navigation}: {navigation: any}) => {
                 profimage: res.user.photoURL,
                 signmethod: 'google',
                 userId: res.user.uid,
+                applicationId:""
               };
               firestore()
                 .collection('users')
@@ -219,8 +218,8 @@ const Login = ({navigation}: {navigation: any}) => {
       <ScrollView
         contentContainerStyle={{flexGrow: 1, backgroundColor: '#fff'}}>
         <Image
-          style={{width: '100%', height: 300, objectFit: 'contain'}}
-          source={require('../assets/banner.png')}
+          style={{width: '100%', height: 300, objectFit: 'scale-down',marginTop:10}}
+          source={require('../assets/grantlogo.png')}
         />
         <Text style={styles.catchyText}>Good To See</Text>
         <Text style={styles.catchyText}>you Back</Text>

@@ -3,8 +3,6 @@ import firestore from '@react-native-firebase/firestore';
 
 const AppContext = createContext();
 
-
-
 const AppProvider = ({ children }) => {
     const [currentVisitorName, SetcurrentVisitorName]=useState('');
     const [currentVisitorId, SetcurrentVisitorId]=useState('');
@@ -16,7 +14,6 @@ const AppProvider = ({ children }) => {
           .onSnapshot(documentSnapshot => {
             SetcurrentVisitorName(documentSnapshot.data()?.Name);
             SetcurrentData(documentSnapshot?.data());
-
           });
         return () => subscriber();
       }, [currentVisitorId]);

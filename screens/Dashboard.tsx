@@ -8,7 +8,7 @@ import {
   TouchableWithoutFeedback,Keyboard,
 } from "react-native";
 import Ionicons from 'react-native-vector-icons/Ionicons';
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Card, Button } from "react-native-paper";
 import Banner from "../components/Banner";
 import { PaperProvider } from 'react-native-paper';
@@ -23,6 +23,58 @@ const Tab = createBottomTabNavigator();
 const Stack = createNativeStackNavigator();
 const options = { title: "", headerShown: false };
 export default function Dashboard({navigation}: {navigation: any}) {
+  const [AppointMode,setAppointMode]=useState<any>({
+    mode:'outlined',
+    buttoncolor:'white'
+  });
+  const [ApplicMode,setApplicMode]=useState<any>({
+    mode:'elevated',
+    buttoncolor:'#FFBD11'
+  }
+);
+
+  const navigationSelector=(choice:string)=>{
+    if(choice=='Appointments'){
+      navigation.navigate('Updates');
+      setAppointMode({
+        mode:'outlined',
+        buttoncolor:'white',
+        textcolor:"#FFBD11"
+      });
+      setApplicMode({
+        mode:'elevated',
+        buttoncolor:'#FFBD11',
+        textcolor:"white"
+      });
+    }else{
+      navigation.navigate('Applications');
+      setApplicMode({
+        mode:'outlined',
+        buttoncolor:'white',
+        textcolor:"#FFBD11"
+      });
+      setAppointMode({
+        mode:'elevated',
+        buttoncolor:'#FFBD11',
+        textcolor:"white"
+      });
+    }
+    
+  }
+
+  useEffect(()=>{
+    setAppointMode({
+      mode:'outlined',
+      buttoncolor:'white',
+      textcolor:"#FFBD11"
+    });
+    setApplicMode({
+      mode:'elevated',
+      buttoncolor:'#FFBD11',
+      textcolor:"white"
+    });
+    navigation.navigate('Updates');
+  },[]);
   
   return (
     <View style={styles.container}>
@@ -30,8 +82,21 @@ export default function Dashboard({navigation}: {navigation: any}) {
       <Banner/>
 
       <Card style={styles.BCont}>
-        <View style={{ flexDirection: 'row' }}>
-
+        <View style={{ flexDirection: 'row',gap:3,width:'100%' }}>
+        <Button style={{width:'50%',borderColor:'#FFBD11'}} icon={() => (<Ionicons name="create" size={24} color={AppointMode.textcolor}/>)}
+              buttonColor={AppointMode.buttoncolor}
+              elevation={5}
+              textColor={AppointMode.textcolor}
+              mode={AppointMode.mode} onPress={() => navigationSelector('Appointments')}>
+              Appointments
+            </Button>
+            <Button style={{width:'50%',borderColor:'#FFBD11'}} icon={() => (<Ionicons name="create" size={24} color={ApplicMode.textcolor} />)}
+              buttonColor={ApplicMode.buttoncolor}
+              textColor={ApplicMode.textcolor}
+              mode={ApplicMode.mode} onPress={() =>  navigationSelector('Applications')}>
+              Application
+            </Button>
+          {/*
           <ScrollView horizontal
             scrollEnabled
             showsHorizontalScrollIndicator={false}
@@ -55,7 +120,7 @@ export default function Dashboard({navigation}: {navigation: any}) {
               mode="elevated" onPress={() => navigation.navigate('Canceled')}>
               Canceled
             </Button>
-          </ScrollView>
+          </ScrollView>*/}
         </View>
       </Card>
 

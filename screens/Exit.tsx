@@ -27,10 +27,7 @@ const Sign_Out = () => {
       {
         text: 'No, sign me out',
         onPress: async() => {
-          console.log('signnig out ...');
-          
           GoogleSignin.signOut().then(()=>{
-            console.log('signned out of the app');
             storeData('');
             storeSignInMethod('');
             navigation.navigate('Login');

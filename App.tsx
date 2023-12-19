@@ -1,29 +1,44 @@
 import "./ignoreWarnings";
-import React from 'react';
+import React, { useEffect } from 'react';
 import { StatusBar, StyleSheet} from 'react-native';
 import {NavigationContainer} from '@react-navigation/native';
 import {createNativeStackNavigator} from '@react-navigation/native-stack';
 import { PaperProvider } from 'react-native-paper';
 import Home from './screens/Home';
 import Login from './screens/Login';
-import { AppProvider } from './AppManager/Manager';
+import { AppContext } from './AppManager/Manager';
 import Register from './screens/Register';
 import Forgotpassword from './screens/Forgotpassword';
+import SplashScreen from 'react-native-splash-screen'
+import { getData } from "./localstorage/storage";
 
 
 const Stack = createNativeStackNavigator();
 
 const App = () => {
 
+  const {SetcurrentVisitorId}=React.useContext(AppContext);
+  
+  var initialRoute="Login";
+  useEffect(()=>{
+    getData().then((resp:any)=>{
+      if (resp!==null && resp!==undefined && resp!=="") {
+        SetcurrentVisitorId(resp.user?.uid);
+        initialRoute="Home";
+      }
+    });
+    SplashScreen.hide();
+  },[]);
+
+
   const options = { title: "", headerShown: false };
   return (
-    <AppProvider>
     <PaperProvider>
     <NavigationContainer>
       <StatusBar
         backgroundColor="#FFBD11"
       />
-      <Stack.Navigator initialRouteName="Login">
+      <Stack.Navigator initialRouteName={initialRoute}>
         <Stack.Screen name="Login" component={Login} options={options}/>
         <Stack.Screen name="Home" component={Home} options={options}/>
         <Stack.Screen name="Register" component={Register} options={options}/>
@@ -31,7 +46,7 @@ const App = () => {
       </Stack.Navigator>
     </NavigationContainer>
     </PaperProvider>
-    </AppProvider>
+
   );
 };
 
