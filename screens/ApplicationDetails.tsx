@@ -48,7 +48,6 @@ const ApplicationDetails = ({ navigation }: { navigation: any }) => {
         querySnapshot.forEach(documentSnapshot => {
           if(documentSnapshot.data()?.medical=="approved"){
             setIsApproved(true);
-            console.log('appoved')
           }else{
             setIsApproved(false);
           }

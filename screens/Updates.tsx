@@ -221,13 +221,11 @@ Linking.openURL(item.url).catch((err)=>{
       ],
     );
   };
-
   
-
   return (
     <ScrollView>
       {
-        appointments.length==0  && <Text style={{margin:5}}>No appointments</Text>
+        appointments.length==0  && <Text style={{margin:5}}>No appointments (doctor appointment will reflect here above the feeds once assigned)</Text>
       }
 
     <DateTimePicker

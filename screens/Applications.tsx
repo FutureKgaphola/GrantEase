@@ -16,6 +16,7 @@ import {AppContext} from '../AppManager/Manager';
 import {getData} from '../localstorage/storage';
 import Icon from 'react-native-vector-icons/Zocial';
 import firestore from '@react-native-firebase/firestore';
+import { searchdelete } from '../methods/Search_n_delete';
 
 const Applications = ({navigation}: {navigation: any}) => {
   const account = async () => {
@@ -108,11 +109,8 @@ const Applications = ({navigation}: {navigation: any}) => {
               let HrfileName = documentSnapshot.data()?.HrfileName;
               let fileName=documentSnapshot.data()?.fileName;
               let filelink=documentSnapshot.data()?.filelink;
-
               var docId=currentData?.applicationId;
-              console.log(currentData?.applicationId);
-  
-              if (Hrfile.includes('http') && HrfileName !== '') {
+              if (Hrfile.includes('http') || filelink.includes('http')) {
                 storage()
                   .ref('/Applications/' + HrfileName)
                   .delete()
@@ -128,12 +126,16 @@ const Applications = ({navigation}: {navigation: any}) => {
                             .collection('users')
                             .doc(currentVisitorId)
                             .update({
-                              applied: 'external medical letter submitted',
+                              applied: 'no application',
+                              medcertificate: 'not applicable',
+                              medical: 'not approved',
+                              illness: 'not applicable',
+                              applicationId:'',
                               
                             });
                           Alert.alert(
                             'Application Withdrawal',
-                            'You have withdrawn your application from the finance team',
+                            'You have withdrawn your application from the GrantEase Hr team',
                           );
                           
                         })
@@ -148,6 +150,13 @@ const Applications = ({navigation}: {navigation: any}) => {
                   .catch(err => {
                     Alert.alert('Withdrawal error', String(err));
                   });
+
+                  //search and remove appointment if exist
+                  try {
+                    searchdelete("Apointments","patientId",currentVisitorId,"==");
+                  } catch (error) {
+                    console.log("searchdelete error: ",String(error));
+                  }
               } 
               if (filelink.includes('http') && fileName !== '') {
                 storage()
@@ -165,12 +174,14 @@ const Applications = ({navigation}: {navigation: any}) => {
                             .collection('users')
                             .doc(currentVisitorId)
                             .update({
-                              applied: 'not submitted',
+                              applied: 'no application',
                               medcertificate: 'not applicable',
                               medical: 'not approved',
                               illness: 'not applicable',
+                              applicationId:'',
                               
                             });
+                            
                           Alert.alert(
                             'Application Withdrawal',
                             'You have withdrawn your application from our Receiving desk team',
@@ -187,6 +198,13 @@ const Applications = ({navigation}: {navigation: any}) => {
                   .catch(err => {
                     Alert.alert('Withdrawal error', String(err));
                   });
+
+                  //search and remove appointment if exist
+                  try {
+                    searchdelete("Apointments","patientId",currentVisitorId,"==");
+                  } catch (error) {
+                    console.log("searchdelete error: ",String(error));
+                  }
               } 
 
 
