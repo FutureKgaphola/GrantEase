@@ -186,6 +186,7 @@ const Applications = ({navigation}: {navigation: any}) => {
                                 medical: 'not approved',
                                 illness: 'not applicable',
                                 applicationId:'',
+                                finance:'not approved'
                                 
                               });
                               

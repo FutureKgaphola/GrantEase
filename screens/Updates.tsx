@@ -286,7 +286,7 @@ Linking.openURL(item.url).catch((err)=>{
                   justifyContent: 'space-between',
                   margin: 5,
                 }}>
-                <Button
+                {/* <Button
                   icon={() => (
                     <Ionicons name="close-outline" color="black" size={24} />
                   )}
@@ -296,7 +296,7 @@ Linking.openURL(item.url).catch((err)=>{
                   mode="outlined"
                   onPress={() => cancelAppointment(item.id)}>
                   Cancel
-                </Button>
+                </Button> */}
                 <Button
                   icon={() => (
                     <Ionicons name="create" color="white" size={24} />
