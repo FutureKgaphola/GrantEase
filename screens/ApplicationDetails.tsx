@@ -2,7 +2,7 @@ import { useEffect, useState, useContext } from 'react';
 import {
   Text,
   View,
-  Alert, PermissionsAndroid, Platform, TouchableOpacity
+  Alert, PermissionsAndroid, Platform, TouchableOpacity, ScrollView
 } from 'react-native';
 import { ActivityIndicator, MD2Colors } from 'react-native-paper';
 import firestore from '@react-native-firebase/firestore';
@@ -161,11 +161,13 @@ const ApplicationDetails = ({ navigation }: { navigation: any }) => {
                     name: currentVisitorName,
                     said: SaID,
                     filelink: url,
-                    fileName: String(specialId+fileName),
+                    fileName: String(specialId+fileName), //array
                     userId: currentVisitorId,
                     applyDate:new Date().toLocaleDateString(),
-                    Hrfile:"no file",
-                    HrfileName:"no file name",
+                    Hrfile:[],
+                    HrfileName:[],
+                    medReport:'no file',
+                    medReportName:'no file',
                     profileimage:currentData?.profimage,
                     doctorName:'none',
                     doctorId:'none',
@@ -210,7 +212,7 @@ const ApplicationDetails = ({ navigation }: { navigation: any }) => {
   }
 
   return (
-    <View style={{ margin: 10, gap: 5 }}>
+    <ScrollView style={{ margin: 10, gap: 5 }}>
       <View style={{ flexDirection: 'row' }}>
         <Button
           icon={() => (
@@ -306,7 +308,7 @@ const ApplicationDetails = ({ navigation }: { navigation: any }) => {
         >
         Refreshing...
       </Snackbar>
-    </View>
+    </ScrollView>
   );
 };
 

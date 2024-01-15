@@ -76,10 +76,10 @@ const Applications = ({navigation}: {navigation: any}) => {
                   Linking.openURL(fileUrl)
                   .catch(err => console.error('Error opening external link:', err))
                 }
-                if(Hrfile.includes("http")){
-                  Linking.openURL(Hrfile)
-                  .catch(err => console.error('Error opening external link:', err))
-                }
+                // if(Hrfile.includes("http")){
+                //   Linking.openURL(Hrfile)
+                //   .catch(err => console.error('Error opening external link:', err))
+                // }
     
               });
             }
@@ -110,102 +110,111 @@ const Applications = ({navigation}: {navigation: any}) => {
               let fileName=documentSnapshot.data()?.fileName;
               let filelink=documentSnapshot.data()?.filelink;
               var docId=currentData?.applicationId;
-              if (Hrfile.includes('http') || filelink.includes('http')) {
-                storage()
-                  .ref('/Applications/' + HrfileName)
-                  .delete()
-                  .then(() => {
+              // if (Hrfile.length>0 || filelink.includes('http')) {
+              //   storage()
+              //     .ref('/Applications/' + HrfileName[0])
+              //     .delete()
+              //     .then(() => {
   
-                    if (Hrfile.includes('http')) {
-                      firestore()
-                        .collection('Applications')
-                        .doc(docId)
-                        .delete()
-                        .then(() => {
-                          firestore()
-                            .collection('users')
-                            .doc(currentVisitorId)
-                            .update({
-                              applied: 'no application',
-                              medcertificate: 'not applicable',
-                              medical: 'not approved',
-                              illness: 'not applicable',
-                              applicationId:'',
+              //       if (Hrfile.length>0) {
+              //         firestore()
+              //           .collection('Applications')
+              //           .doc(docId)
+              //           .delete()
+              //           .then(() => {
+              //             firestore()
+              //               .collection('users')
+              //               .doc(currentVisitorId)
+              //               .update({
+              //                 applied: 'no application',
+              //                 medcertificate: 'not applicable',
+              //                 medical: 'not approved',
+              //                 illness: 'not applicable',
+              //                 applicationId:'',
                               
-                            });
-                          Alert.alert(
-                            'Application Withdrawal',
-                            'You have withdrawn your application from the GrantEase Hr team',
-                          );
+              //               });
+              //             Alert.alert(
+              //               'Application Withdrawal',
+              //               'You have withdrawn your application from the GrantEase Hr team',
+              //             );
                           
-                        })
-                        .catch(err => {
-                          Alert.alert(
-                            'Withdrawal error',
-                            'Something went wrong : ' + String(err),
-                          );
-                        });
-                    } 
-                  })
-                  .catch(err => {
-                    Alert.alert('Withdrawal error', String(err));
-                  });
+              //           })
+              //           .catch(err => {
+              //             Alert.alert(
+              //               'Withdrawal error',
+              //               'Something went wrong : ' + String(err),
+              //             );
+              //           });
+              //       } 
+              //     })
+              //     .catch(err => {
+              //       Alert.alert('Withdrawal error', String(err));
+              //     });
 
-                  //search and remove appointment if exist
-                  try {
-                    searchdelete("Apointments","patientId",currentVisitorId,"==");
-                  } catch (error) {
-                    console.log("searchdelete error: ",String(error));
-                  }
-              } 
-              if (filelink.includes('http') && fileName !== '') {
-                storage()
-                  .ref('/Applications/' + fileName)
-                  .delete()
-                  .then(() => {
-  
-                    if (filelink.includes('http')) {
-                      firestore()
-                        .collection('Applications')
-                        .doc(docId)
-                        .delete()
-                        .then(() => {
-                          firestore()
-                            .collection('users')
-                            .doc(currentVisitorId)
-                            .update({
-                              applied: 'no application',
-                              medcertificate: 'not applicable',
-                              medical: 'not approved',
-                              illness: 'not applicable',
-                              applicationId:'',
+              //     //search and remove appointment if exist
+              //     try {
+              //       searchdelete("Apointments","patientId",currentVisitorId,"==");
+              //     } catch (error) {
+              //       console.log("searchdelete error: ",String(error));
+              //     }
+              // } 
+              if(Hrfile.length>0 ){
+                Alert.alert(
+                  'Withdrawal denial',
+                  'Application withdrawal at this stage is not permitted. contact administrator',
+                );
+                return;
+              }else{
+                if (filelink.includes('http') && fileName !== '') {
+                  storage()
+                    .ref('/Applications/' + fileName)
+                    .delete()
+                    .then(() => {
+    
+                      if (filelink.includes('http')) {
+                        firestore()
+                          .collection('Applications')
+                          .doc(docId)
+                          .delete()
+                          .then(() => {
+                            firestore()
+                              .collection('users')
+                              .doc(currentVisitorId)
+                              .update({
+                                applied: 'no application',
+                                medcertificate: 'not applicable',
+                                medical: 'not approved',
+                                illness: 'not applicable',
+                                applicationId:'',
+                                
+                              });
                               
-                            });
-                            
-                          Alert.alert(
-                            'Application Withdrawal',
-                            'You have withdrawn your application from our Receiving desk team',
-                          );
-                        })
-                        .catch(err => {
-                          Alert.alert(
-                            'Withdrawal error',
-                            'Something went wrong : ' + String(err),
-                          );
-                        });
-                    } 
-                  })
-                  .catch(err => {
-                    Alert.alert('Withdrawal error', String(err));
-                  });
-
-                  //search and remove appointment if exist
-                  try {
-                    searchdelete("Apointments","patientId",currentVisitorId,"==");
-                  } catch (error) {
-                    console.log("searchdelete error: ",String(error));
-                  }
-              } 
+                            Alert.alert(
+                              'Application Withdrawal',
+                              'You have withdrawn your application from our Receiving desk team',
+                            );
+                          })
+                          .catch(err => {
+                            Alert.alert(
+                              'Withdrawal error',
+                              'Something went wrong : ' + String(err),
+                            );
+                          });
+                      } 
+                    })
+                    .catch(err => {
+                      Alert.alert('Withdrawal error', String(err));
+                    });
+  
+                    //search and remove appointment if exist
+                    try {
+                      searchdelete("Apointments","patientId",currentVisitorId,"==");
+                    } catch (error) {
+                      console.log("searchdelete error: ",String(error));
+                    }
+                } 
+              }
+              
 
 
             });
